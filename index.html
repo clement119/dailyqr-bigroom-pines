@@ -424,8 +424,8 @@
         const config = {
             username: 'clement119',
             repo: 'dailyqr-bigroom-pines',
-            folder: '', 
-            fileExtension: 'jpeg',
+            folder: '',
+            fileExtensions: ['jpeg', 'jpg'],  // Try jpeg first, then jpg
             pdfName: 'scot-guide-CN.pdf'
         };
 
@@ -522,12 +522,9 @@
             const day = String(d.getDate()).padStart(2, '0');
             const month = String(d.getMonth() + 1).padStart(2, '0');
             const year = d.getFullYear();
-            
-            const filename = `${day}${month}${year}.${config.fileExtension}`;
-            
-            // Build URL
+
+            const baseFilename = `${day}${month}${year}`;
             const folderPath = config.folder ? `${config.folder}/` : '';
-            const imageUrl = `https://raw.githubusercontent.com/${config.username}/${config.repo}/main/${folderPath}${filename}`;
 
             const imgElement = document.getElementById('daily-qr');
             const container = document.getElementById('qr-container');
@@ -536,14 +533,31 @@
             container.classList.remove('has-error');
             imgElement.style.display = 'block';
 
-            // Set Source
-            imgElement.src = imageUrl;
-            document.getElementById('lightbox-img').src = imageUrl;
+            // Try loading with fallback extensions
+            let extensionIndex = 0;
 
-            imgElement.onerror = function() {
-                container.classList.add('has-error');
-                console.log(`Failed to load: ${filename}`);
-            };
+            function tryLoadImage() {
+                if (extensionIndex >= config.fileExtensions.length) {
+                    // All extensions failed
+                    container.classList.add('has-error');
+                    console.log(`Failed to load image for date: ${baseFilename}`);
+                    return;
+                }
+
+                const ext = config.fileExtensions[extensionIndex];
+                const filename = `${baseFilename}.${ext}`;
+                const imageUrl = `https://raw.githubusercontent.com/${config.username}/${config.repo}/main/${folderPath}${filename}`;
+
+                imgElement.src = imageUrl;
+                document.getElementById('lightbox-img').src = imageUrl;
+
+                imgElement.onerror = function() {
+                    extensionIndex++;
+                    tryLoadImage();  // Try next extension
+                };
+            }
+
+            tryLoadImage();
         }
 
         // --- Logic: Open PDF Guide (Modal) ---
