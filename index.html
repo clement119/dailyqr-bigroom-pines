@@ -426,7 +426,7 @@
             repo: 'dailyqr-bigroom-pines',
             folder: '',
             fileExtensions: ['jpeg', 'jpg'],  // Try jpeg first, then jpg
-            pdfName: 'scot-guide-CN.pdf'
+            pdfNames: { en: 'scot-guide-EN.pdf', zh: 'scot-guide-CN.pdf' }
         };
 
         // --- State Management ---
@@ -564,8 +564,9 @@
         function openGuide(event) {
             if(event) event.preventDefault();
             
-            // Raw URL for the PDF
-            const rawPdfUrl = `https://raw.githubusercontent.com/${config.username}/${config.repo}/main/${config.pdfName}`;
+            // Raw URL for the PDF (language-aware)
+            const pdfName = config.pdfNames[state.lang] || config.pdfNames.en;
+            const rawPdfUrl = `https://raw.githubusercontent.com/${config.username}/${config.repo}/main/${pdfName}`;
             
             // Google Docs Viewer URL (allows displaying PDF in iframe without download)
             const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(rawPdfUrl)}&embedded=true`;
